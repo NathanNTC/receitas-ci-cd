@@ -45,3 +45,5 @@ jobs:
             git checkout homolog
             git pull origin homolog
             sudo docker compose up -d --build homolog
+
+        
