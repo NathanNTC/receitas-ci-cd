@@ -7,39 +7,49 @@ on:
 
 jobs:
   deploy:
-    # IMPORTANTE: Diz ao GitHub para rodar todos os passos dentro da sua VM Univates
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do código na VM
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.2
-          extensions: mbstring, pdo, pdo_mysql
+          extensions: mbstring, pdo, pdo_mysql, sqlite, pdo_sqlite
 
       - name: Instalar dependências
         run: composer install --no-interaction --prefer-dist
 
-      - name: Copiar .env
-        run: cp .env.example .env
+      - name: Preparar ambiente de teste
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan config:clear
 
-      - name: Gerar APP_KEY
-        run: php artisan key:generate
+      - name: Criar banco SQLite
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
 
-      - name: Executar testes
+      - name: Rodar testes
         run: php artisan test
 
       - name: PHPStan
         run: ./vendor/bin/phpstan analyse app
 
-      # AGORA O DEPLOY RODA DIRETO VIA TERMINAL LOCAL DA VM:
-      - name: Executar comandos de Docker e Git na VM
-        run: |
-          cd /var/www/receitas/receitas-ci-cd
-          git fetch origin
-          git reset --hard origin/homolog
-          docker compose down
-          docker compose up -d --build
+      - name: Deploy na VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd /var/www/receitas/receitas-ci-cd
+
+            git fetch origin
+            git reset --hard origin/homolog
+
+            docker compose down
+            docker compose up -d --build
