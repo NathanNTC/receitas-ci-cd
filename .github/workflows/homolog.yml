@@ -20,34 +20,44 @@ jobs:
           extensions: mbstring, pdo, pdo_mysql, sqlite, pdo_sqlite
 
       - name: Instalar dependências
-        run: composer install --no-interaction --prefer-dist
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      # PASSO MOVIDO PARA CÁ: Cria o banco antes de qualquer comando do Laravel
-      - name: Criar banco SQLite para o pipeline
+      - name: Criar banco SQLite
         run: |
           mkdir -p database
           touch database/database.sqlite
 
-      # Agora o config:clear não vai mais reclamar que o arquivo não existe
-      - name: Preparar ambiente de teste
+      - name: Preparar .env
         run: |
           cp .env.example .env
           php artisan key:generate
-          php artisan config:clear
-          php artisan cache:clear
+
+          sed -i 's/DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
+          sed -i 's/DB_DATABASE=.*/DB_DATABASE=database\/database.sqlite/' .env
+
+          echo "CACHE_DRIVER=array" >> .env
+          echo "SESSION_DRIVER=array" >> .env
+          echo "QUEUE_CONNECTION=sync" >> .env
+
+      - name: Limpar config
+        run: php artisan config:clear
+
+      - name: Rodar migrations
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+        run: php artisan migrate --force
 
       - name: Rodar testes
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
-        run: |
-          php artisan migrate --force
-          php artisan test
+        run: php artisan test
 
       - name: PHPStan
         run: ./vendor/bin/phpstan analyse app
 
-      - name: Deploy na VM (Comandos locais)
+      - name: Deploy na VM
         run: |
           cd /var/www/receitas/receitas-ci-cd
           git fetch origin
