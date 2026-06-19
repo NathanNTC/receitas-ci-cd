@@ -22,11 +22,6 @@ jobs:
       - name: Instalar dependências
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Criar banco SQLite
-        run: |
-          mkdir -p database
-          touch database/database.sqlite
-
       - name: Preparar .env
         run: |
           cp .env.example .env
@@ -39,7 +34,12 @@ jobs:
           echo "SESSION_DRIVER=array" >> .env
           echo "QUEUE_CONNECTION=sync" >> .env
 
-      - name: Limpar config
+      - name: Criar banco SQLite
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
+
+      - name: Limpar cache Laravel
         run: php artisan config:clear
 
       - name: Rodar migrations
@@ -57,10 +57,15 @@ jobs:
       - name: PHPStan
         run: ./vendor/bin/phpstan analyse app
 
-      - name: Deploy na VM
+      - name: Deploy (sem Docker)
         run: |
           cd /var/www/receitas/receitas-ci-cd
           git fetch origin
           git reset --hard origin/homolog
-          docker compose down
-          docker compose up -d --build
+
+          composer install --no-dev --optimize-autoloader
+
+          php artisan migrate --force
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
