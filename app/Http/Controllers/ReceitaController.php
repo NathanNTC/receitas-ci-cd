@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-  //atualização de codigo test
+  //atualização de codigo testes
 use App\Models\Receita;
 use Illuminate\Http\Request;
 
