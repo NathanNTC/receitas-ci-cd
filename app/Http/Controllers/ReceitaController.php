@@ -70,7 +70,7 @@ class ReceitaController extends Controller
         ]);
 
         $receita = Receita::findOrFail($id);
-        $receita->metodoQueNaoExiste();
+    //    $receita->metodoQueNaoExiste();
 
         $receita->update($request->all());
 
