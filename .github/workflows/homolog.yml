@@ -19,8 +19,13 @@ jobs:
           php-version: 8.2
           extensions: mbstring, pdo, pdo_mysql, sqlite, pdo_sqlite
 
-      - name: Instalar dependências
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      - name: Instalar dependências (CI)
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Criar SQLite
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
 
       - name: Preparar .env
         run: |
@@ -33,14 +38,6 @@ jobs:
           echo "CACHE_DRIVER=array" >> .env
           echo "SESSION_DRIVER=array" >> .env
           echo "QUEUE_CONNECTION=sync" >> .env
-
-      - name: Criar banco SQLite
-        run: |
-          mkdir -p database
-          touch database/database.sqlite
-
-      - name: Limpar cache Laravel
-        run: php artisan config:clear
 
       - name: Rodar migrations
         env:
@@ -57,15 +54,28 @@ jobs:
       - name: PHPStan
         run: ./vendor/bin/phpstan analyse app
 
-      - name: Deploy (sem Docker)
+      # =========================
+      # DEPLOY REAL HOMOLOGAÇÃO
+      # =========================
+      - name: Deploy homologação (subir ambiente)
         run: |
           cd /var/www/receitas/receitas-ci-cd
+
+          echo "Atualizando código..."
           git fetch origin
           git reset --hard origin/homolog
 
+          echo "Instalando dependências produção..."
           composer install --no-dev --optimize-autoloader
 
+          echo "Rodando migrations produção..."
           php artisan migrate --force
+
+          echo "Otimizando Laravel..."
           php artisan config:cache
           php artisan route:cache
           php artisan view:cache
+
+          echo "Reiniciando cache/opcode (se existir PHP-FPM)"
+          sudo -n systemctl reload php8.2-fpm || true
+          sudo -n systemctl reload nginx || true
