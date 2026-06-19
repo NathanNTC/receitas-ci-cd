@@ -70,6 +70,7 @@ class ReceitaController extends Controller
         ]);
 
         $receita = Receita::findOrFail($id);
+        $receita->metodoQueNaoExiste();
 
         $receita->update($request->all());
 
@@ -78,10 +79,11 @@ class ReceitaController extends Controller
     }
 
     public function destroy($id)
-    {
-        Receita::destroy($id);
+        {
+       //     $variavelQueNaoExiste++;
 
-        return redirect('/receitas')
-            ->with('success', 'Receita removida.');
-    }
+            Receita::destroy($id);
+
+            return redirect('/receitas');
+        }
 }
