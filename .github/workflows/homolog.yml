@@ -22,7 +22,13 @@ jobs:
       - name: Instalar dependências
         run: composer install --no-interaction --prefer-dist
 
-      # Ajustado para limpar configurações antigas e preparar o .env
+      # PASSO MOVIDO PARA CÁ: Cria o banco antes de qualquer comando do Laravel
+      - name: Criar banco SQLite para o pipeline
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
+
+      # Agora o config:clear não vai mais reclamar que o arquivo não existe
       - name: Preparar ambiente de teste
         run: |
           cp .env.example .env
@@ -30,12 +36,6 @@ jobs:
           php artisan config:clear
           php artisan cache:clear
 
-      - name: Criar banco SQLite para o pipeline
-        run: |
-          mkdir -p database
-          touch database/database.sqlite
-
-      # CORRIGIDO AQUI: Forçando os testes a usarem o banco SQLite isolado do pipeline
       - name: Rodar testes
         env:
           DB_CONNECTION: sqlite
