@@ -109,7 +109,7 @@ class ReceitaSeeder extends Seeder
                 'tipo_receita' => 'Doce',
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
 
         ]);
     }

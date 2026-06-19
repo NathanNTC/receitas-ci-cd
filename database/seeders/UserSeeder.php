@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Database\Seeders;
 
 use App\Models\User;
@@ -14,7 +13,7 @@ class UserSeeder extends Seeder
             'nome' => 'adm',
             'login' => 'adm',
             'password' => bcrypt('123'),
-            'situacao' => 'A'
+            'situacao' => 'A',
         ]);
     }
 }

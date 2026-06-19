@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
 use App\Models\Receita;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class ReceitaTest extends TestCase
 {
@@ -17,7 +17,7 @@ class ReceitaTest extends TestCase
             'nome' => 'Administrador',
             'login' => 'admin',
             'password' => bcrypt('123'),
-            'situacao' => 'A'
+            'situacao' => 'A',
         ]);
     }
 
@@ -30,7 +30,7 @@ class ReceitaTest extends TestCase
             'descricao' => 'Teste',
             'data_registro' => now(),
             'custo' => 10,
-            'tipo_receita' => 'Doce'
+            'tipo_receita' => 'Doce',
         ]);
 
         $response = $this
@@ -51,13 +51,13 @@ class ReceitaTest extends TestCase
                 'descricao' => 'Teste',
                 'data_registro' => now(),
                 'custo' => 10,
-                'tipo_receita' => 'Doce'
+                'tipo_receita' => 'Doce',
             ]);
 
         $response->assertRedirect('/receitas');
 
         $this->assertDatabaseHas('receitas', [
-            'nome' => 'Bolo'
+            'nome' => 'Bolo',
         ]);
     }
 
@@ -81,7 +81,7 @@ class ReceitaTest extends TestCase
             'descricao' => 'Teste',
             'data_registro' => now(),
             'custo' => 10,
-            'tipo_receita' => 'Doce'
+            'tipo_receita' => 'Doce',
         ]);
 
         $response = $this
@@ -91,7 +91,7 @@ class ReceitaTest extends TestCase
                 'descricao' => 'Teste',
                 'data_registro' => now(),
                 'custo' => 15,
-                'tipo_receita' => 'Doce'
+                'tipo_receita' => 'Doce',
             ]);
 
         $response->assertRedirect('/receitas');
@@ -106,7 +106,7 @@ class ReceitaTest extends TestCase
             'descricao' => 'Teste',
             'data_registro' => now(),
             'custo' => 10,
-            'tipo_receita' => 'Doce'
+            'tipo_receita' => 'Doce',
         ]);
 
         $response = $this
@@ -130,7 +130,7 @@ class ReceitaTest extends TestCase
     public function test_criar_receita_sem_login()
     {
         $response = $this->post('/receitas', [
-            'nome' => 'Bolo'
+            'nome' => 'Bolo',
         ]);
 
         $response->assertRedirect('/login');
@@ -142,12 +142,12 @@ class ReceitaTest extends TestCase
             'nome' => 'Admin',
             'login' => 'admin',
             'password' => bcrypt('123'),
-            'situacao' => 'A'
+            'situacao' => 'A',
         ]);
 
         $response = $this->post('/login', [
             'login' => 'admin',
-            'senha' => 'errada'
+            'senha' => 'errada',
         ]);
 
         $response->assertSessionHas('erro');
@@ -160,7 +160,7 @@ class ReceitaTest extends TestCase
 
         $response = $this->actingAs($user)
             ->put('/receitas/999', [
-                'nome' => 'Teste'
+                'nome' => 'Teste',
             ]);
 
         $this->assertTrue(
@@ -186,7 +186,7 @@ class ReceitaTest extends TestCase
 
         $response = $this->actingAs($user)
             ->post('/receitas', [
-                'descricao' => 'Teste'
+                'descricao' => 'Teste',
             ]);
 
         $response->assertSessionHasErrors(['nome']);
@@ -199,7 +199,7 @@ class ReceitaTest extends TestCase
         $response = $this->actingAs($user)
             ->post('/receitas', [
                 'nome' => 'Bolo',
-                'custo' => 'abc'
+                'custo' => 'abc',
             ]);
 
         $response->assertSessionHasErrors(['custo']);
@@ -222,18 +222,18 @@ class ReceitaTest extends TestCase
                 'descricao' => 'Teste',
                 'data_registro' => now(),
                 'custo' => 20,
-                'tipo_receita' => 'Salgado'
+                'tipo_receita' => 'Salgado',
             ]);
 
         $this->assertDatabaseHas('receitas', [
-            'nome' => 'Arroz'
+            'nome' => 'Arroz',
         ]);
     }
 
     public function test_login_sem_senha()
     {
         $response = $this->post('/login', [
-            'login' => 'admin'
+            'login' => 'admin',
         ]);
 
         $response->assertSessionHasErrors();

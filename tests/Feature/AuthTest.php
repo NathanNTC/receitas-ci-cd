@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class AuthTest extends TestCase
 {
@@ -16,12 +16,12 @@ class AuthTest extends TestCase
             'nome' => 'Administrador',
             'login' => 'admin',
             'password' => bcrypt('123'),
-            'situacao' => 'A'
+            'situacao' => 'A',
         ]);
 
         $response = $this->post('/login', [
             'login' => 'admin',
-            'senha' => '123'
+            'senha' => '123',
         ]);
 
         $response->assertRedirect('/receitas');
@@ -33,7 +33,7 @@ class AuthTest extends TestCase
     {
         $response = $this->post('/login', [
             'login' => 'admin',
-            'senha' => 'errada'
+            'senha' => 'errada',
         ]);
 
         $response->assertSessionHas('erro');
@@ -45,7 +45,7 @@ class AuthTest extends TestCase
             'nome' => 'Administrador',
             'login' => 'admin',
             'password' => bcrypt('123'),
-            'situacao' => 'A'
+            'situacao' => 'A',
         ]);
 
         $response = $this

@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ReceitaController;
+use Illuminate\Support\Facades\Route;
 
 // Redireciona a raiz (/) para o formulário de login
 Route::redirect('/', '/login');

@@ -16,13 +16,13 @@ class AuthController extends Controller
     {
         $request->validate([
             'login' => 'required',
-            'senha' => 'required'
+            'senha' => 'required',
         ]);
 
         if (
             Auth::attempt([
                 'login' => $request->login,
-                'password' => $request->senha
+                'password' => $request->senha,
             ])
         ) {
             $request->session()->regenerate();

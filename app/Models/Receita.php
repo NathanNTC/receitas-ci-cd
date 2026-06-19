@@ -11,6 +11,6 @@ class Receita extends Model
         'descricao',
         'data_registro',
         'custo',
-        'tipo_receita'
+        'tipo_receita',
     ];
 }

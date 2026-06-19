@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Receita;
+use Illuminate\Http\Request;
 
 class ReceitaController extends Controller
 {
@@ -13,8 +13,8 @@ class ReceitaController extends Controller
 
         if ($request->filled('busca')) {
             $query->where(function ($q) use ($request) {
-                $q->where('nome', 'like', '%' . $request->busca . '%')
-                  ->orWhere('descricao', 'like', '%' . $request->busca . '%');
+                $q->where('nome', 'like', '%'.$request->busca.'%')
+                    ->orWhere('descricao', 'like', '%'.$request->busca.'%');
             });
         }
 
@@ -43,7 +43,7 @@ class ReceitaController extends Controller
             'descricao' => 'required',
             'data_registro' => 'required|date',
             'custo' => 'required|numeric',
-            'tipo_receita' => 'required'
+            'tipo_receita' => 'required',
         ]);
 
         Receita::create($request->all());
@@ -66,11 +66,11 @@ class ReceitaController extends Controller
             'descricao' => 'required',
             'data_registro' => 'required|date',
             'custo' => 'required|numeric',
-            'tipo_receita' => 'required'
+            'tipo_receita' => 'required',
         ]);
 
         $receita = Receita::findOrFail($id);
-    //    $receita->metodoQueNaoExiste();
+  //      $receita->metodoQueNaoExiste();
 
         $receita->update($request->all());
 
@@ -79,11 +79,11 @@ class ReceitaController extends Controller
     }
 
     public function destroy($id)
-        {
-       //     $variavelQueNaoExiste++;
+    {
+      //  $variavelQueNaoExiste++;
 
-            Receita::destroy($id);
+        Receita::destroy($id);
 
-            return redirect('/receitas');
-        }
+        return redirect('/receitas');
+    }
 }
