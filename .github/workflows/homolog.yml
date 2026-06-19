@@ -1,0 +1,40 @@
+name: Deploy Homolog
+
+on:
+  push:
+    branches:
+      - homolog
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+
+      - name: Instalar dependências
+        run: composer install --no-interaction
+
+      - name: Rodar testes
+        run: php artisan test
+
+      - name: Análise de código (PHPStan)
+        run: ./vendor/bin/phpstan analyse app
+
+      - name: Deploy na VM (Homolog)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd /var/www/receitas/receitas-ci-cd
+            git checkout homolog
+            git pull origin homolog
+            sudo docker compose up -d --build homolog
