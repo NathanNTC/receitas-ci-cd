@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
@@ -39,17 +39,11 @@ jobs:
       - name: PHPStan
         run: ./vendor/bin/phpstan analyse app
 
-      - name: Deploy na VM
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            cd /var/www/receitas/receitas-ci-cd
-
-            git fetch origin
-            git reset --hard origin/homolog
-
-            docker compose down
-            docker compose up -d --build
+      # CORRIGIDO AQUI: Removeu o appleboy/ssh-action e usa apenas comandos de terminal diretos
+      - name: Deploy na VM (Comandos locais)
+        run: |
+          cd /var/www/receitas/receitas-ci-cd
+          git fetch origin
+          git reset --hard origin/homolog
+          docker compose down
+          docker compose up -d --build
