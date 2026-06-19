@@ -55,8 +55,7 @@ class ReceitaTest extends TestCase
             ]);
 
         $response->assertRedirect('/receitas');
-        // $response->assertRedirect('/pagina-inexistente');
-            
+
         $this->assertDatabaseHas('receitas', [
             'nome' => 'Bolo'
         ]);
@@ -122,5 +121,131 @@ class ReceitaTest extends TestCase
         $response = $this->get('/receitas');
 
         $response->assertRedirect('/login');
+    }
+
+    // ==============================
+    // +10 TESTES
+    // ==============================
+
+    public function test_criar_receita_sem_login()
+    {
+        $response = $this->post('/receitas', [
+            'nome' => 'Bolo'
+        ]);
+
+        $response->assertRedirect('/login');
+    }
+
+    public function test_login_senha_incorreta()
+    {
+        User::create([
+            'nome' => 'Admin',
+            'login' => 'admin',
+            'password' => bcrypt('123'),
+            'situacao' => 'A'
+        ]);
+
+        $response = $this->post('/login', [
+            'login' => 'admin',
+            'senha' => 'errada'
+        ]);
+
+        $response->assertSessionHas('erro');
+        $this->assertGuest();
+    }
+
+    public function test_atualizar_receita_inexistente()
+    {
+        $user = $this->usuario();
+
+        $response = $this->actingAs($user)
+            ->put('/receitas/999', [
+                'nome' => 'Teste'
+            ]);
+
+        $this->assertTrue(
+            in_array($response->status(), [302, 404])
+        );
+    }
+
+    public function test_deletar_receita_inexistente()
+    {
+        $user = $this->usuario();
+
+        $response = $this->actingAs($user)
+            ->delete('/receitas/999');
+
+        $this->assertTrue(
+            in_array($response->status(), [302, 404])
+        );
+    }
+
+    public function test_validacao_nome_obrigatorio()
+    {
+        $user = $this->usuario();
+
+        $response = $this->actingAs($user)
+            ->post('/receitas', [
+                'descricao' => 'Teste'
+            ]);
+
+        $response->assertSessionHasErrors(['nome']);
+    }
+
+    public function test_validacao_custo_invalido()
+    {
+        $user = $this->usuario();
+
+        $response = $this->actingAs($user)
+            ->post('/receitas', [
+                'nome' => 'Bolo',
+                'custo' => 'abc'
+            ]);
+
+        $response->assertSessionHasErrors(['custo']);
+    }
+
+    public function test_rota_inexistente()
+    {
+        $response = $this->get('/rota-que-nao-existe-123');
+
+        $response->assertStatus(404);
+    }
+
+    public function test_receita_salva_corretamente()
+    {
+        $user = $this->usuario();
+
+        $this->actingAs($user)
+            ->post('/receitas', [
+                'nome' => 'Arroz',
+                'descricao' => 'Teste',
+                'data_registro' => now(),
+                'custo' => 20,
+                'tipo_receita' => 'Salgado'
+            ]);
+
+        $this->assertDatabaseHas('receitas', [
+            'nome' => 'Arroz'
+        ]);
+    }
+
+    public function test_login_sem_senha()
+    {
+        $response = $this->post('/login', [
+            'login' => 'admin'
+        ]);
+
+        $response->assertSessionHasErrors();
+    }
+
+    public function test_listagem_sem_dados_na_tabela()
+    {
+        $user = $this->usuario();
+
+        $response = $this->actingAs($user)
+            ->get('/receitas');
+
+        $response->assertStatus(200);
     }
 }
