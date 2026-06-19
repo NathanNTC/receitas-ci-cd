@@ -22,24 +22,31 @@ jobs:
       - name: Instalar dependências
         run: composer install --no-interaction --prefer-dist
 
+      # Ajustado para limpar configurações antigas e preparar o .env
       - name: Preparar ambiente de teste
         run: |
           cp .env.example .env
           php artisan key:generate
           php artisan config:clear
+          php artisan cache:clear
 
-      - name: Criar banco SQLite
+      - name: Criar banco SQLite para o pipeline
         run: |
           mkdir -p database
           touch database/database.sqlite
 
+      # CORRIGIDO AQUI: Forçando os testes a usarem o banco SQLite isolado do pipeline
       - name: Rodar testes
-        run: php artisan test
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+        run: |
+          php artisan migrate --force
+          php artisan test
 
       - name: PHPStan
         run: ./vendor/bin/phpstan analyse app
 
-      # CORRIGIDO AQUI: Removeu o appleboy/ssh-action e usa apenas comandos de terminal diretos
       - name: Deploy na VM (Comandos locais)
         run: |
           cd /var/www/receitas/receitas-ci-cd
