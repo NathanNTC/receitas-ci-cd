@@ -6,7 +6,7 @@ on:
       - homolog
 
 jobs:
-  test-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,19 +22,19 @@ jobs:
       - name: Instalar dependências
         run: composer install --no-interaction --prefer-dist
 
-      - name: Preparar Laravel
-        run: |
-          cp .env.example .env
-          php artisan key:generate
-          php artisan config:clear
+      - name: Copiar .env
+        run: cp .env.example .env
 
-      - name: Rodar testes
+      - name: Gerar APP_KEY
+        run: php artisan key:generate
+
+      - name: Executar testes
         run: php artisan test
 
-      - name: Análise de código (PHPStan)
+      - name: PHPStan
         run: ./vendor/bin/phpstan analyse app
 
-      - name: Deploy na VM (Homolog)
+      - name: Deploy na VM
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VM_HOST }}
@@ -42,8 +42,9 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             cd /var/www/receitas/receitas-ci-cd
-            git checkout homolog
-            git pull origin homolog
-            sudo docker compose up -d --build homolog
 
-        
+            git fetch origin
+            git reset --hard origin/homolog
+
+            docker compose down
+            docker compose up -d --build
