@@ -183,7 +183,7 @@ class ReceitaTest extends TestCase
     public function test_validacao_nome_obrigatorio()
     {
         $user = $this->usuario();
-
+// teste de pipeline
         $response = $this->actingAs($user)
             ->post('/receitas', [
                 'descricao' => 'Teste',
