@@ -15,10 +15,19 @@ WORKDIR /var/www/html
 
 COPY . .
 
-RUN composer install --no-interaction
+RUN composer install --no-interaction --optimize-autoloader
 
 RUN a2enmod rewrite
 
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
+RUN mkdir -p storage/framework/cache
+RUN mkdir -p storage/framework/sessions
+RUN mkdir -p storage/framework/views
+
+RUN chmod -R 777 storage
+RUN chmod -R 777 bootstrap/cache
+
 EXPOSE 80
+
+CMD ["apache2-foreground"]
