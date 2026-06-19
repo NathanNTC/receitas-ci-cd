@@ -1,4 +1,4 @@
-name: Laravel CI
+name: Laravel CI/CD - Main
 
 on:
   push:
@@ -6,8 +6,9 @@ on:
       - main
 
 jobs:
-  ci:
-    runs-on: ubuntu-latest
+  ci-cd:
+    # IMPORTANTE: Mudado de ubuntu-latest para self-hosted para rodar na sua VM
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
@@ -33,3 +34,12 @@ jobs:
 
       - name: PHPStan
         run: ./vendor/bin/phpstan analyse app
+
+      # PASSO ADICIONADO: Atualiza o Docker na VM para a branch main
+      - name: Executar comandos de Docker e Git na VM
+        run: |
+          cd /var/www/receitas/receitas-ci-cd
+          git fetch origin
+          git reset --hard origin/main
+          docker compose down
+          docker compose up -d --build

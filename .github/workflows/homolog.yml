@@ -7,10 +7,11 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    # IMPORTANTE: Diz ao GitHub para rodar todos os passos dentro da sua VM Univates
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout
+      - name: Checkout do código na VM
         uses: actions/checkout@v4
 
       - name: Setup PHP
@@ -34,17 +35,11 @@ jobs:
       - name: PHPStan
         run: ./vendor/bin/phpstan analyse app
 
-      - name: Deploy na VM
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            cd /var/www/receitas/receitas-ci-cd
-
-            git fetch origin
-            git reset --hard origin/homolog
-
-            docker compose down
-            docker compose up -d --build
+      # AGORA O DEPLOY RODA DIRETO VIA TERMINAL LOCAL DA VM:
+      - name: Executar comandos de Docker e Git na VM
+        run: |
+          cd /var/www/receitas/receitas-ci-cd
+          git fetch origin
+          git reset --hard origin/homolog
+          docker compose down
+          docker compose up -d --build
