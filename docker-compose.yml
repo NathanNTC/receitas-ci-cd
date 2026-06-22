@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
 
   mysql_homolog:
@@ -29,36 +27,40 @@ services:
   homolog:
     build: .
     container_name: app_homolog
+    env_file:
+      - .env.homolog
     ports:
       - "8001:8000"
     volumes:
       - .:/var/www/html
     depends_on:
       - mysql_homolog
-    environment:
-      DB_HOST: mysql_homolog
-      DB_DATABASE: receitas_homolog
-      DB_USERNAME: root
-      DB_PASSWORD: root
-      APP_ENV: local
-      APP_DEBUG: true
+    command: >
+      sh -c "
+      composer install &&
+      php artisan key:generate --force &&
+      php artisan migrate --force &&
+      php artisan serve --host=0.0.0.0 --port=8000
+      "
 
   prod:
     build: .
     container_name: app_prod
+    env_file:
+      - .env.prod
     ports:
       - "8002:8000"
     volumes:
       - .:/var/www/html
     depends_on:
       - mysql_prod
-    environment:
-      DB_HOST: mysql_prod
-      DB_DATABASE: receitas_prod
-      DB_USERNAME: root
-      DB_PASSWORD: root
-      APP_ENV: production
-      APP_DEBUG: false
+    command: >
+      sh -c "
+      composer install &&
+      php artisan key:generate --force &&
+      php artisan migrate --force &&
+      php artisan serve --host=0.0.0.0 --port=8000
+      "
 
 volumes:
   db_homolog:
