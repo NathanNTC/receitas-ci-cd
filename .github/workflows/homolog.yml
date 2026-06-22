@@ -13,9 +13,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Subir ambiente homolog
+      - name: Atualizar código na VM
         run: |
           cd /opt/receitas-ci-cd/homolog
-          git pull origin homolog
-          sudo docker compose down
-          sudo docker compose up -d --build
+
+          echo "Atualizando código..."
+          git fetch origin
+          git reset --hard origin/homolog
+
+      - name: Instalar dependências
+        run: |
+          cd /opt/receitas-ci-cd/homolog
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Subir containers
+        run: |
+          cd /opt/receitas-ci-cd/homolog
+          docker compose down
+          docker compose up -d --build
+
+      - name: Rodar migrations
+        run: |
+          cd /opt/receitas-ci-cd/homolog
+          docker exec app_homolog php artisan migrate --force
+
+      - name: Limpar cache Laravel
+        run: |
+          docker exec app_homolog php artisan config:clear
+          docker exec app_homolog php artisan cache:clear
+          docker exec app_homolog php artisan route:clear
+          docker exec app_homolog php artisan view:clear
