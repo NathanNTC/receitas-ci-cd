@@ -18,15 +18,12 @@ jobs:
 
       - name: Preparar ambiente de teste
         run: |
+          mkdir -p database
+          touch database/database.sqlite
+
           cp .env.example .env
           php artisan key:generate
           php artisan config:clear
-          php artisan cache:clear
-
-      - name: Criar banco SQLite
-        run: |
-          mkdir -p database
-          touch database/database.sqlite
 
       - name: Rodar migrations + testes
         env:
