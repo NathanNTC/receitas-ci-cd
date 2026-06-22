@@ -18,28 +18,26 @@ jobs:
           cd /opt/receitas-ci-cd/homolog
 
           echo "Atualizando código..."
-          git fetch origin
+          git fetch origin homolog
           git reset --hard origin/homolog
 
-      - name: Instalar dependências
+      - name: Rebuild Docker
         run: |
           cd /opt/receitas-ci-cd/homolog
-          composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Subir containers
-        run: |
-          cd /opt/receitas-ci-cd/homolog
-          docker compose down
-          docker compose up -d --build
+          echo "Subindo ambiente limpo..."
+          sudo docker compose down -v
+          sudo docker compose up -d --build
 
-      - name: Rodar migrations
-        run: |
-          cd /opt/receitas-ci-cd/homolog
-          docker exec app_homolog php artisan migrate --force
+      - name: Esperar subir containers
+        run: sleep 10
 
-      - name: Limpar cache Laravel
+      - name: Migrations
         run: |
-          docker exec app_homolog php artisan config:clear
-          docker exec app_homolog php artisan cache:clear
-          docker exec app_homolog php artisan route:clear
-          docker exec app_homolog php artisan view:clear
+          sudo docker exec app_homolog php artisan migrate --force
+
+      - name: Cache Laravel (correto)
+        run: |
+          sudo docker exec app_homolog php artisan config:cache
+          sudo docker exec app_homolog php artisan route:cache
+          sudo docker exec app_homolog php artisan view:cache

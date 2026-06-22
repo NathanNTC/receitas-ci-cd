@@ -18,26 +18,26 @@ jobs:
           cd /opt/receitas-ci-cd/prod
 
           echo "Atualizando código..."
-          git fetch origin
+          git fetch origin main
           git reset --hard origin/main
-
-      - name: Instalar dependências
-        run: |
-          cd /opt/receitas-ci-cd/prod
-          composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
       - name: Subir containers
         run: |
           cd /opt/receitas-ci-cd/prod
-          docker compose down
-          docker compose up -d --build
 
-      - name: Rodar migrations
-        run: |
-          docker exec app_prod php artisan migrate --force
+          echo "Rebuild Docker..."
+          sudo docker compose down -v
+          sudo docker compose up -d --build
 
-      - name: Otimizar Laravel
+      - name: Esperar subir
+        run: sleep 10
+
+      - name: Migrations
         run: |
-          docker exec app_prod php artisan config:cache
-          docker exec app_prod php artisan route:cache
-          docker exec app_prod php artisan view:cache
+          sudo docker exec app_prod php artisan migrate --force
+
+      - name: Cache Laravel
+        run: |
+          sudo docker exec app_prod php artisan config:cache
+          sudo docker exec app_prod php artisan route:cache
+          sudo docker exec app_prod php artisan view:cache
