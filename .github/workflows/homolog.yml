@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Instalar dependências
+      - name: Instalar dependências (CI)
         run: composer install --no-interaction --prefer-dist
 
       - name: Preparar ambiente de teste
@@ -36,28 +36,34 @@ jobs:
       - name: PHPStan
         run: ./vendor/bin/phpstan analyse app
 
+      # DEPLOY NA VM
       - name: Deploy na VM (Docker)
         run: |
           cd /opt/receitas-ci-cd/homolog
+
           git fetch origin
           git reset --hard origin/homolog
 
           sudo docker compose down
           sudo docker compose up -d --build
 
-      - name: Aguardar MySQL ficar pronto
+      - name: Aguardar MySQL
         run: |
           echo "Aguardando MySQL..."
 
-          until sudo docker exec mysql_homolog mysqladmin ping -h mysql_homolog -uroot -proot --silent; do
+          until sudo docker exec mysql_homolog mysqladmin ping -h localhost -uroot -proot --silent; do
             sleep 2
           done
 
-          echo "MySQL pronto!"
+          echo "MySQL pronto"
 
-      - name: Rodar migrations no container
+      - name: Migrar banco
         run: |
           sudo docker exec app_homolog php artisan migrate --force
+
+      - name: Seed inicial (apenas se necessário)
+        run: |
+          sudo docker exec app_homolog php artisan db:seed --class=UserSeeder --force
 
       - name: Limpar cache Laravel
         run: |
