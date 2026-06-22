@@ -7,13 +7,18 @@ use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
-        User::create([
-            'nome' => 'adm',
-            'login' => 'adm',
-            'password' => bcrypt('123'),
-            'situacao' => 'A',
-        ]);
+        User::updateOrCreate(
+            ['login' => 'adm'], // Condição para encontrar o registro existente
+            [
+                'nome' => 'adm',
+                'password' => bcrypt('123'),
+                'situacao' => 'A',
+            ]
+        );
     }
 }
