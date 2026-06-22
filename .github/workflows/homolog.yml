@@ -13,31 +13,48 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Atualizar código na VM
+      - name: Instalar dependências
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Preparar ambiente de teste
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan config:clear
+          php artisan cache:clear
+
+      - name: Criar banco SQLite
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
+
+      - name: Rodar migrations + testes
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+        run: |
+          php artisan migrate --force
+          php artisan test
+
+      - name: PHPStan
+        run: ./vendor/bin/phpstan analyse app
+
+      - name: Deploy na VM (Docker)
         run: |
           cd /opt/receitas-ci-cd/homolog
-
-          echo "Atualizando código..."
-          git fetch origin homolog
+          git fetch origin
           git reset --hard origin/homolog
 
-      - name: Rebuild Docker
-        run: |
-          cd /opt/receitas-ci-cd/homolog
-
-          echo "Subindo ambiente limpo..."
-          sudo docker compose down -v
+          sudo docker compose down
           sudo docker compose up -d --build
 
-      - name: Esperar subir containers
-        run: sleep 10
-
-      - name: Migrations
+      - name: Rodar migrations no container
         run: |
           sudo docker exec app_homolog php artisan migrate --force
 
-      - name: Cache Laravel (correto)
+      - name: Limpar cache Laravel
         run: |
-          sudo docker exec app_homolog php artisan config:cache
-          sudo docker exec app_homolog php artisan route:cache
-          sudo docker exec app_homolog php artisan view:cache
+          sudo docker exec app_homolog php artisan config:clear
+          sudo docker exec app_homolog php artisan cache:clear
+          sudo docker exec app_homolog php artisan route:clear
+          sudo docker exec app_homolog php artisan view:clear
