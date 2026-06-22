@@ -45,6 +45,16 @@ jobs:
           sudo docker compose down
           sudo docker compose up -d --build
 
+      - name: Aguardar MySQL ficar pronto
+        run: |
+          echo "Aguardando MySQL..."
+
+          until sudo docker exec mysql_homolog mysqladmin ping -h mysql_homolog -uroot -proot --silent; do
+            sleep 2
+          done
+
+          echo "MySQL pronto!"
+
       - name: Rodar migrations no container
         run: |
           sudo docker exec app_homolog php artisan migrate --force
