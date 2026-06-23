@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-  //atualização de codigo testes
+
 use App\Models\Receita;
 use Illuminate\Http\Request;
 
@@ -14,7 +14,7 @@ class ReceitaController extends Controller
         if ($request->filled('busca')) {
             $query->where(function ($q) use ($request) {
                 $q->where('nome', 'like', '%'.$request->busca.'%')
-                    ->orWhere('descricao', 'like', '%'.$request->busca.'%');
+                  ->orWhere('descricao', 'like', '%'.$request->busca.'%');
             });
         }
 
@@ -55,7 +55,6 @@ class ReceitaController extends Controller
     public function edit($id)
     {
         $receita = Receita::findOrFail($id);
-      
 
         return view('receitas.edit', compact('receita'));
     }
@@ -69,13 +68,14 @@ class ReceitaController extends Controller
             'custo' => 'required|numeric',
             'tipo_receita' => 'required',
         ]);
-//testes
-
-        $receita->metodoQueNaoExiste();
 
         $receita = Receita::find($id);
 
-      //  $receita->update($request->all()); 
+        // =========================
+        // ERRO 
+        // usar na apresentação para quebrar o pipeline
+        // =========================
+        $receita->update($request->all());
 
         return redirect('/receitas')
             ->with('success', 'Receita atualizada com sucesso.');
@@ -83,8 +83,6 @@ class ReceitaController extends Controller
 
     public function destroy($id)
     {
-     
-
         Receita::destroy($id);
 
         return redirect('/receitas');
