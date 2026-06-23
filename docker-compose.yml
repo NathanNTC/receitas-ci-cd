@@ -1,67 +1,18 @@
 services:
 
-  mysql_homolog:
+  mysql:
     image: mysql:8
-    container_name: mysql_homolog
-    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: receitas_homolog
     ports:
       - "3307:3306"
-    volumes:
-      - db_homolog:/var/lib/mysql
 
-  mysql_prod:
-    image: mysql:8
-    container_name: mysql_prod
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: receitas_prod
-    ports:
-      - "3308:3306"
-    volumes:
-      - db_prod:/var/lib/mysql
-
-  homolog:
+  app:
     build: .
-    container_name: app_homolog
     env_file:
       - .env.homolog
     ports:
       - "8001:8000"
-    volumes:
-      - .:/var/www/html
     depends_on:
-      - mysql_homolog
-    command: >
-      sh -c "
-      composer install &&
-     
-      php artisan migrate --force &&
-      php artisan serve --host=0.0.0.0 --port=8000
-      "
-
-  prod:
-    build: .
-    container_name: app_prod
-    env_file:
-      - .env.prod
-    ports:
-      - "8002:8000"
-    volumes:
-      - .:/var/www/html
-    depends_on:
-      - mysql_prod
-    command: >
-      sh -c "
-      composer install &&
-     
-      php artisan migrate --force &&
-      php artisan serve --host=0.0.0.0 --port=8000
-      "
-
-volumes:
-  db_homolog:
-  db_prod:
+      - mysql

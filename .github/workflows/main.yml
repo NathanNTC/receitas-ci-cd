@@ -18,7 +18,7 @@ jobs:
 
       - name: Deploy Produção
         run: |
-          cd /opt/receitas-ci-cd
+          cd /opt/receitas-ci-cd/prod
 
           git fetch origin
           git reset --hard origin/main
@@ -27,17 +27,16 @@ jobs:
           sudo docker compose -f docker-compose.prod.yml up -d --build
 
       - name: Aguardar MySQL
-        run: |
-          sleep 20
+        run: sleep 20
 
       - name: Rodar migrations
         run: |
-          cd /opt/receitas-ci-cd
+          cd /opt/receitas-ci-cd/prod
           sudo docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
 
       - name: Cache Laravel
         run: |
-          cd /opt/receitas-ci-cd
+          cd /opt/receitas-ci-cd/prod
           sudo docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
           sudo docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
           sudo docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
