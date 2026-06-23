@@ -10,19 +10,15 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # 1. Checkout do código
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Instalar dependências (base do CI)
       - name: Instalar dependências
         run: composer install --no-interaction --prefer-dist
 
-      # 3. PHPStan (falha cedo se tiver erro de código)
       - name: PHPStan
         run: ./vendor/bin/phpstan analyse app
 
-      # 4. Preparar ambiente de teste (SQLite isolado)
       - name: Preparar ambiente de teste
         run: |
           mkdir -p database
@@ -33,7 +29,6 @@ jobs:
           php artisan key:generate
           php artisan config:clear
 
-      # 5. Rodar migrations + testes (CI)
       - name: Rodar migrations + testes
         env:
           DB_CONNECTION: sqlite
@@ -42,44 +37,34 @@ jobs:
           php artisan migrate --force
           php artisan test
 
-      # 6. Deploy na VM (atualiza código + sobe containers)
-      - name: Deploy na VM (Docker)
+      - name: Deploy Homolog
         run: |
-          cd /opt/receitas-ci-cd/homolog
+          cd /opt/receitas-ci-cd
 
-          echo "Atualizando código..."
           git fetch origin
           git reset --hard origin/homolog
 
-          echo "Rebuild containers..."
-          sudo docker compose down
-          sudo docker compose up -d --build
+          sudo docker compose -f docker-compose.homolog.yml down || true
+          sudo docker compose -f docker-compose.homolog.yml up -d --build
 
-      # 7. Aguardar MySQL ficar pronto
       - name: Aguardar MySQL
         run: |
-          echo "Aguardando MySQL..."
+          sleep 20
 
-          until sudo docker exec mysql_homolog mysqladmin ping -h localhost -uroot -proot --silent; do
-            sleep 2
-          done
-
-          echo "MySQL pronto!"
-
-      # 8. Migrar banco no container (produção real)
       - name: Migrar banco
         run: |
-          sudo docker exec app_homolog php artisan migrate --force
+          cd /opt/receitas-ci-cd
+          sudo docker compose -f docker-compose.homolog.yml exec -T app php artisan migrate --force
 
-      # 9. Seed inicial (somente dados base)
       - name: Seed inicial
         run: |
-          sudo docker exec app_homolog php artisan db:seed --class=UserSeeder --force
+          cd /opt/receitas-ci-cd
+          sudo docker compose -f docker-compose.homolog.yml exec -T app php artisan db:seed --class=UserSeeder --force
 
-      # 10. Limpar cache Laravel
       - name: Limpar cache Laravel
         run: |
-          sudo docker exec app_homolog php artisan config:clear
-          sudo docker exec app_homolog php artisan cache:clear
-          sudo docker exec app_homolog php artisan route:clear
-          sudo docker exec app_homolog php artisan view:clear
+          cd /opt/receitas-ci-cd
+          sudo docker compose -f docker-compose.homolog.yml exec -T app php artisan config:clear
+          sudo docker compose -f docker-compose.homolog.yml exec -T app php artisan cache:clear
+          sudo docker compose -f docker-compose.homolog.yml exec -T app php artisan route:clear
+          sudo docker compose -f docker-compose.homolog.yml exec -T app php artisan view:clear

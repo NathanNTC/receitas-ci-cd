@@ -1,0 +1,18 @@
+services:
+  mysql:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: receitas_homolog
+    ports:
+      - "3307:3306"
+
+  app:
+    build: .
+    env_file:
+      - .env.homolog
+    ports:
+      - "8001:8000"
+    depends_on:
+      - mysql

@@ -16,21 +16,28 @@ jobs:
       - name: Instalar dependências
         run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
-      - name: Deploy na VM
+      - name: Deploy Produção
         run: |
-          cd /opt/receitas-ci-cd/prod
+          cd /opt/receitas-ci-cd
+
           git fetch origin
           git reset --hard origin/main
 
-          sudo docker compose down
-          sudo docker compose up -d --build
+          sudo docker compose -f docker-compose.prod.yml down || true
+          sudo docker compose -f docker-compose.prod.yml up -d --build
+
+      - name: Aguardar MySQL
+        run: |
+          sleep 20
 
       - name: Rodar migrations
         run: |
-          sudo docker exec app_prod php artisan migrate --force
+          cd /opt/receitas-ci-cd
+          sudo docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
 
       - name: Cache Laravel
         run: |
-          sudo docker exec app_prod php artisan config:cache
-          sudo docker exec app_prod php artisan route:cache
-          sudo docker exec app_prod php artisan view:cache
+          cd /opt/receitas-ci-cd
+          sudo docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
+          sudo docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
+          sudo docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
