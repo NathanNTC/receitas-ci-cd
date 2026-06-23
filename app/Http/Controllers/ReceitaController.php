@@ -55,6 +55,7 @@ class ReceitaController extends Controller
     public function edit($id)
     {
         $receita = Receita::findOrFail($id);
+      
 
         return view('receitas.edit', compact('receita'));
     }
@@ -69,10 +70,11 @@ class ReceitaController extends Controller
             'tipo_receita' => 'required',
         ]);
 
-        $receita = Receita::findOrFail($id);
-    //   $receita->metodoQueNaoExiste();
+        //   $receita->metodoQueNaoExiste();
+        
+        $receita = Receita::find($id);
 
-        $receita->update($request->all());
+        $receita->update($request->all()); 
 
         return redirect('/receitas')
             ->with('success', 'Receita atualizada com sucesso.');
