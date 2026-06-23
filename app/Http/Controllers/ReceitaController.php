@@ -69,6 +69,7 @@ class ReceitaController extends Controller
             'custo' => 'required|numeric',
             'tipo_receita' => 'required',
         ]);
+//teste
 
         $receita->metodoQueNaoExiste();
 
