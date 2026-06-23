@@ -72,7 +72,7 @@ class ReceitaController extends Controller
         $receita = Receita::find($id);
 
         
-        // =========================
+        // ========================
         // ERRO 
         // usar na apresentação para quebrar o pipeline
         // =========================

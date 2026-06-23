@@ -29,7 +29,7 @@ jobs:
         run: |
           echo "Aguardando MySQL..."
 
-          until sudo docker compose -f docker-compose.prod.yml exec -T mysql mysqladmin ping -h localhost -uroot -proot --silent; do
+          until sudo docker exec prod-mysql-1 mysqladmin ping -h localhost -uroot -proot --silent; do
             sleep 2
           done
 
@@ -37,12 +37,14 @@ jobs:
 
       - name: Rodar migrations
         run: |
-          cd /opt/receitas-ci-cd/prod
-          sudo docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
+          sudo docker exec prod-app-1 php artisan migrate --force
+
+      - name: Seed (opcional)
+        run: |
+          sudo docker exec prod-app-1 php artisan db:seed --force || true
 
       - name: Cache Laravel
         run: |
-          cd /opt/receitas-ci-cd/prod
-          sudo docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
-          sudo docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
-          sudo docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
+          sudo docker exec prod-app-1 php artisan config:cache
+          sudo docker exec prod-app-1 php artisan route:cache
+          sudo docker exec prod-app-1 php artisan view:cache
