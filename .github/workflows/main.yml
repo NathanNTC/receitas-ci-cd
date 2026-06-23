@@ -1,52 +1,48 @@
 name: Deploy Produção
 
 on:
-push:
-branches:
-- main
+  push:
+    branches:
+      - main
 
 jobs:
-deploy:
-runs-on: self-hosted
+  deploy:
+    runs-on: self-hosted
 
-```
-steps:
-  - name: Checkout
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  - name: Instalar dependências
-    run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+      - name: Instalar dependências
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
-  - name: Deploy Produção
-    run: |
-      cd /opt/receitas-ci-cd/prod
+      - name: Deploy Produção
+        run: |
+          cd /opt/receitas-ci-cd/prod
 
-      git fetch origin
-      git reset --hard origin/main
+          git fetch origin
+          git reset --hard origin/main
 
-      sudo docker compose -f docker-compose.prod.yml up -d --build
+          sudo docker compose -f docker-compose.prod.yml up -d --build
 
-  - name: Aguardar MySQL
-    run: |
-      echo "Aguardando MySQL..."
+      - name: Aguardar MySQL
+        run: |
+          echo "Aguardando MySQL..."
 
-      until sudo docker compose -f /opt/receitas-ci-cd/prod/docker-compose.prod.yml exec -T mysql mysqladmin ping -h localhost -uroot -proot --silent; do
-        sleep 2
-      done
+          until sudo docker compose -f docker-compose.prod.yml exec -T mysql mysqladmin ping -h localhost -uroot -proot --silent; do
+            sleep 2
+          done
 
-      echo "MySQL pronto"
+          echo "MySQL pronto"
 
-  - name: Rodar migrations
-    run: |
-      cd /opt/receitas-ci-cd/prod
+      - name: Rodar migrations
+        run: |
+          cd /opt/receitas-ci-cd/prod
+          sudo docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
 
-      sudo docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
-
-  - name: Cache Laravel
-    run: |
-      cd /opt/receitas-ci-cd/prod
-
-      sudo docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
-      sudo docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
-      sudo docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
-
+      - name: Cache Laravel
+        run: |
+          cd /opt/receitas-ci-cd/prod
+          sudo docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
+          sudo docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
+          sudo docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
