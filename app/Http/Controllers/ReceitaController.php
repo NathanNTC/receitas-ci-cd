@@ -70,8 +70,8 @@ class ReceitaController extends Controller
             'tipo_receita' => 'required',
         ]);
 
-        //   $receita->metodoQueNaoExiste();
-        
+        $receita->metodoQueNaoExiste();
+
         $receita = Receita::find($id);
 
         $receita->update($request->all()); 
