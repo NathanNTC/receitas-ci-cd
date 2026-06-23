@@ -75,7 +75,7 @@ class ReceitaController extends Controller
 
         $receita = Receita::find($id);
 
-        $receita->update($request->all()); 
+      //  $receita->update($request->all()); 
 
         return redirect('/receitas')
             ->with('success', 'Receita atualizada com sucesso.');
