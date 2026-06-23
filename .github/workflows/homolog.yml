@@ -37,32 +37,45 @@ jobs:
           php artisan migrate --force
           php artisan test
 
-      - name: Deploy Homolog
+      - name: Atualizar código na VM
         run: |
           cd /opt/receitas-ci-cd/homolog
 
           git fetch origin
           git reset --hard origin/homolog
 
-          sudo docker compose -f docker-compose.homolog.yml down || true
+      - name: Subir containers
+        run: |
+          cd /opt/receitas-ci-cd/homolog
+
           sudo docker compose -f docker-compose.homolog.yml up -d --build
 
       - name: Aguardar MySQL
-        run: sleep 20
+        run: |
+          echo "Aguardando MySQL..."
 
-      - name: Migrar banco
+          until sudo docker compose -f /opt/receitas-ci-cd/homolog/docker-compose.homolog.yml exec -T mysql mysqladmin ping -h localhost -uroot -proot --silent; do
+            sleep 2
+          done
+
+          echo "MySQL pronto"
+
+      - name: Rodar migrations
         run: |
           cd /opt/receitas-ci-cd/homolog
+
           sudo docker compose -f docker-compose.homolog.yml exec -T app php artisan migrate --force
 
       - name: Seed inicial
         run: |
           cd /opt/receitas-ci-cd/homolog
-          sudo docker compose -f docker-compose.homolog.yml exec -T app php artisan db:seed --class=UserSeeder --force
+
+          sudo docker compose -f docker-compose.homolog.yml exec -T app php artisan db:seed --class=UserSeeder --force || true
 
       - name: Limpar cache Laravel
         run: |
           cd /opt/receitas-ci-cd/homolog
+
           sudo docker compose -f docker-compose.homolog.yml exec -T app php artisan config:clear
           sudo docker compose -f docker-compose.homolog.yml exec -T app php artisan cache:clear
           sudo docker compose -f docker-compose.homolog.yml exec -T app php artisan route:clear
