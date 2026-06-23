@@ -61,7 +61,7 @@ jobs:
         run: |
           sudo docker exec app_homolog php artisan migrate --force
 
-      - name: Seed inicial (apenas se necessário)
+      - name: Seed inicial 
         run: |
           sudo docker exec app_homolog php artisan db:seed --class=UserSeeder --force
 
