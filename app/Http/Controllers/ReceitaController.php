@@ -80,7 +80,7 @@ class ReceitaController extends Controller
 
     public function destroy($id)
     {
-      //  $variavelQueNaoExiste++;
+        $variavelQueNaoExiste++;
 
         Receita::destroy($id);
 
