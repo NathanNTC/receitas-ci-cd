@@ -69,13 +69,12 @@ class ReceitaController extends Controller
             'tipo_receita' => 'required',
         ]);
 
+        
+         echo $variavelNaoExiste;
         $receita = Receita::find($id);
 
         
-        // ========================
-        // ERRO 
-        // usar na apresentação para quebrar o pipeline
-        // =========================
+       
         $receita->update($request->all());
 
         return redirect('/receitas')
