@@ -70,7 +70,7 @@ class ReceitaController extends Controller
         ]);
 
         
-        echo $variavelNaoExiste;
+        //echo $variavelNaoExiste;
         $receita = Receita::find($id);
 
         
