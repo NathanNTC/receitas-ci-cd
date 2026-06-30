@@ -15,7 +15,7 @@
 
     <div class="d-flex justify-content-between mb-3">
 
-        <h2>Receitas</h2>
+        <h2>Receitas Top</h2>
 
         <form action="/logout" method="POST">
 
