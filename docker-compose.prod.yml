@@ -7,6 +7,8 @@ services:
       MYSQL_DATABASE: receitas_prod
     ports:
       - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
 
   app:
     build: .
@@ -16,3 +18,6 @@ services:
       - "8002:8000"
     depends_on:
       - mysql
+
+volumes:
+  mysql_data:
